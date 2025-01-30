@@ -52,7 +52,6 @@ app.post("/api/admins/register", async (req, res) => {
 });
 
 app.post("/api/admins/login", async (req, res) => {
-  console.log(email, password);
   const { email, password } = req.body;
 
   try {
