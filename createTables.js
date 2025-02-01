@@ -13,10 +13,7 @@ const createTables = async () => {
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        github_profile TEXT NOT NULL,
-        password_hash BYTEA NOT NULL,
-        initial_password TEXT,
+        description TEXT,
         created_by INTEGER REFERENCES admins(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );

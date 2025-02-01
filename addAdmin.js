@@ -2,7 +2,7 @@ const pool = require("./db");
 const bcrypt = require("bcrypt");
 
 const addAdmin = async () => {
-  const email = "paulgasbarra@pursuit.org";
+  const email = "paul@gmail.org";
   const password = "admin123";
 
   try {
