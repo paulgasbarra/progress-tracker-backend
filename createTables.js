@@ -22,7 +22,6 @@ const createTables = async () => {
         id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
         description TEXT,
-        criteria JSONB,
         created_by INTEGER REFERENCES admins(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -46,6 +45,15 @@ const createTables = async () => {
         github_profile TEXT NOT NULL,
         password_hash BYTEA NOT NULL,
         initial_password TEXT,
+        created_by INTEGER REFERENCES admins(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS criteria (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        project_id INTEGER REFERENCES projects(id),
         created_by INTEGER REFERENCES admins(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
