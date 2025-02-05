@@ -32,14 +32,14 @@ router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { title, description } = req.body;
   try {
-    const updatedMilestone = await pool.query(
+    const result = await pool.query(
       "UPDATE milestones SET title = $1, description = $2 WHERE id = $3 RETURNING *",
       [title, description, id]
     );
-    if (updatedMilestone.rows.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: "Milestone not found" });
     }
-    res.json(updatedMilestone.rows[0]);
+    res.json(result.rows[0]);
   } catch (err) {
     console.error("Error updating milestone:", err.message);
     res.status(500).send("Server Error");
@@ -88,6 +88,21 @@ router.get("/:id/criteria", async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error("Error fetching criteria:", err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+router.post("/", async (req, res) => {
+  console.log("Creating milestone");
+  const { title, description } = req.body;
+  try {
+    const newMilestone = await pool.query(
+      "INSERT INTO milestones (title, description) VALUES ($1, $2) RETURNING *",
+      [title, description]
+    );
+    res.status(201).json(newMilestone.rows[0]);
+  } catch (err) {
+    console.error("Error creating milestone:", err.message);
     res.status(500).send("Server Error");
   }
 });

@@ -14,6 +14,41 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get a single project by ID with milestones and criteria
+router.get("/:id", async (req, res) => {
+  console.log("Fetching project with ID:", req.params.id);
+  const { id } = req.params;
+  try {
+    const projectResult = await pool.query(
+      "SELECT * FROM projects WHERE id = $1",
+      [id]
+    );
+
+    const milestonesResult = await pool.query(
+      "SELECT m.*, pm.project_id FROM milestones m JOIN project_milestones pm ON m.id = pm.milestone_id WHERE pm.project_id = $1",
+      [id]
+    );
+
+    const milestones = await Promise.all(
+      milestonesResult.rows.map(async (milestone) => {
+        const criteriaResult = await pool.query(
+          "SELECT * FROM criteria WHERE milestone_id = $1",
+          [milestone.id]
+        );
+        return { ...milestone, criteria: criteriaResult.rows };
+      })
+    );
+
+    const project = projectResult.rows[0];
+    project.milestones = milestones;
+
+    res.json(project);
+  } catch (err) {
+    console.error("Error fetching project:", err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 // Create a new project
 router.post("/", async (req, res) => {
   const { name, description } = req.body;
@@ -49,16 +84,98 @@ router.put("/:id", async (req, res) => {
 });
 
 // Get milestones for a project
-router.get("/:id/milestones", async (req, res) => {
-  const { id } = req.params;
+router.get("/:projectId/milestones", async (req, res) => {
+  const { projectId } = req.params;
   try {
-    const result = await pool.query(
-      "SELECT * FROM milestones WHERE project_id = $1",
-      [id]
+    const milestonesResult = await pool.query(
+      "SELECT m.* FROM milestones m JOIN project_milestones pm ON m.id = pm.milestone_id WHERE pm.project_id = $1",
+      [projectId]
     );
-    res.json(result.rows);
+    res.json(milestonesResult.rows);
   } catch (err) {
-    console.error("Error fetching milestones:", err.message);
+    console.error("Error fetching milestones for project:", err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// Add a milestone to a project
+router.post("/:projectId/milestones/:milestoneId", async (req, res) => {
+  console.log("Adding milestone to project");
+  const { projectId, milestoneId } = req.params;
+  try {
+    // Use the junction table to associate projects and milestones
+    await pool.query(
+      "INSERT INTO project_milestones (project_id, milestone_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+      [projectId, milestoneId]
+    );
+
+    // Fetch the updated project with milestones
+    const projectResult = await pool.query(
+      "SELECT * FROM projects WHERE id = $1",
+      [projectId]
+    );
+
+    const milestonesResult = await pool.query(
+      "SELECT m.*, pm.project_id FROM milestones m JOIN project_milestones pm ON m.id = pm.milestone_id WHERE pm.project_id = $1",
+      [projectId]
+    );
+
+    const milestones = await Promise.all(
+      milestonesResult.rows.map(async (milestone) => {
+        const criteriaResult = await pool.query(
+          "SELECT * FROM criteria WHERE milestone_id = $1",
+          [milestone.id]
+        );
+        return { ...milestone, criteria: criteriaResult.rows };
+      })
+    );
+
+    const project = projectResult.rows[0];
+    project.milestones = milestones;
+
+    res.json(project);
+  } catch (err) {
+    console.error("Error adding milestone to project:", err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// Remove a milestone from a project
+router.delete("/:projectId/milestones/:milestoneId", async (req, res) => {
+  const { projectId, milestoneId } = req.params;
+  try {
+    await pool.query(
+      "DELETE FROM project_milestones WHERE project_id = $1 AND milestone_id = $2",
+      [projectId, milestoneId]
+    );
+
+    // Fetch the updated project with milestones
+    const projectResult = await pool.query(
+      "SELECT * FROM projects WHERE id = $1",
+      [projectId]
+    );
+
+    const milestonesResult = await pool.query(
+      "SELECT m.*, pm.project_id FROM milestones m JOIN project_milestones pm ON m.id = pm.milestone_id WHERE pm.project_id = $1",
+      [projectId]
+    );
+
+    const milestones = await Promise.all(
+      milestonesResult.rows.map(async (milestone) => {
+        const criteriaResult = await pool.query(
+          "SELECT * FROM criteria WHERE milestone_id = $1",
+          [milestone.id]
+        );
+        return { ...milestone, criteria: criteriaResult.rows };
+      })
+    );
+
+    const project = projectResult.rows[0];
+    project.milestones = milestones;
+
+    res.json(project);
+  } catch (err) {
+    console.error("Error removing milestone from project:", err.message);
     res.status(500).send("Server Error");
   }
 });
