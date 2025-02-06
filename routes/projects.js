@@ -83,12 +83,17 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Get milestones for a project
+// Get milestones for a project with criteria
 router.get("/:projectId/milestones", async (req, res) => {
   const { projectId } = req.params;
   try {
     const milestonesResult = await pool.query(
-      "SELECT m.* FROM milestones m JOIN project_milestones pm ON m.id = pm.milestone_id WHERE pm.project_id = $1",
+      `SELECT m.id, m.title, json_agg(c.*) as criteria
+       FROM milestones m
+       LEFT JOIN criteria c ON m.id = c.milestone_id
+       JOIN project_milestones pm ON m.id = pm.milestone_id
+       WHERE pm.project_id = $1
+       GROUP BY m.id`,
       [projectId]
     );
     res.json(milestonesResult.rows);
