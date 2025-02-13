@@ -1,26 +1,29 @@
-const express = require("express");
+import express from "express";
+import pool from "../db.js";
+import { analyzeCode } from "../services/aiService.js";
+
 const router = express.Router();
-const pool = require("../db");
-const { analyzeCode } = require("../services/aiService"); // Assume this is your AI service
 
 // Generate a report for a repository
 router.post("/generate", async (req, res) => {
-  const { milestoneId, repoId, criteria } = req.body;
-  console.log("Received request with:", { milestoneId, repoId, criteria });
+  const { milestoneId, repoUrl, criteria } = req.body;
+  console.log("trying to generate report");
   try {
     // Analyze the repository code using AI
-    const analysis = await analyzeCode(repoId);
+    const analysis = await analyzeCode(repoUrl, criteria);
+    console.log("****analysis****\n", analysis);
 
     // Create a new report
     const reportResult = await pool.query(
-      "INSERT INTO reports (milestone_id, repo_id, evaluation) VALUES ($1, $2, $3) RETURNING *",
-      [milestoneId, repoId, analysis.evaluation]
+      "INSERT INTO reports (milestone_id, repo_url, evaluation) VALUES ($1, $2, $3) RETURNING *",
+      [milestoneId, repoUrl, analysis.analysis]
     );
+
     const report = reportResult.rows[0];
 
     // Create checkpoints for each criterion
     const checkpointPromises = criteria.map(async (criterion) => {
-      const pass = analysis.criteriaResults[criterion.id]; // Assume this is a boolean
+      const pass = analysis.criteria[criterion.id]; // Assume this is a boolean
       return pool.query(
         "INSERT INTO checkpoints (criteria_id, report_id, pass) VALUES ($1, $2, $3) RETURNING *",
         [criterion.id, report.id, pass]
@@ -36,4 +39,4 @@ router.post("/generate", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

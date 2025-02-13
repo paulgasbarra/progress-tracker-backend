@@ -1,13 +1,13 @@
-const cors = require("cors");
-const express = require("express");
+import cors from "cors";
+import express from "express";
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-const adminsRouter = require("./routes/admins");
-const projectsRouter = require("./routes/projects");
-const milestonesRouter = require("./routes/milestones");
-const criteriaRouter = require("./routes/criteria");
-const reportsRouter = require("./routes/reports");
+import adminsRouter from "./routes/admins.js";
+import projectsRouter from "./routes/projects.js";
+import milestonesRouter from "./routes/milestones.js";
+import criteriaRouter from "./routes/criteria.js";
+import reportsRouter from "./routes/reports.js";
 
 app.use(cors());
 app.use(express.json());

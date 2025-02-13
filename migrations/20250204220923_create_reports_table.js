@@ -1,4 +1,4 @@
-exports.up = function (knex) {
+export function up(knex) {
   return knex.schema.createTable("reports", function (table) {
     table.increments("id").primary();
     table
@@ -11,8 +11,8 @@ exports.up = function (knex) {
     table.text("evaluation");
     table.timestamp("creation_date").defaultTo(knex.fn.now());
   });
-};
+}
 
-exports.down = function (knex) {
+export function down(knex) {
   return knex.schema.dropTable("reports");
-};
+}

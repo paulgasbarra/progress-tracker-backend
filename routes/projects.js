@@ -1,7 +1,7 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
-const pool = require("../db");
+import pool from "../db.js";
 
 // Get all projects
 router.get("/", async (req, res) => {
@@ -185,4 +185,4 @@ router.delete("/:projectId/milestones/:milestoneId", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

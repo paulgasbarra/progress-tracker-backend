@@ -1,13 +1,12 @@
-exports.up = function (knex) {
-  return knex.schema.createTable("projects", function (table) {
+export function up(knex) {
+  return knex.schema.createTable("projects", (table) => {
     table.increments("id").primary();
-    table.text("name").notNullable();
+    table.string("name").notNullable();
     table.text("description");
-    table.integer("created_by").unsigned().references("id").inTable("admins");
-    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamps(true, true);
   });
-};
+}
 
-exports.down = function (knex) {
+export function down(knex) {
   return knex.schema.dropTable("projects");
-};
+}

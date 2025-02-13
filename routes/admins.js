@@ -1,4 +1,4 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
 router.get("/admins", async (req, res) => {
@@ -68,4 +68,4 @@ router.post("/api/admins/login", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

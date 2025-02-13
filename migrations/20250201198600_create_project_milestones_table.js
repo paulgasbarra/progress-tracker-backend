@@ -1,4 +1,4 @@
-exports.up = function (knex) {
+export function up(knex) {
   return knex.schema.createTable("project_milestones", function (table) {
     table.increments("id").primary();
     table
@@ -14,8 +14,8 @@ exports.up = function (knex) {
       .inTable("milestones")
       .onDelete("CASCADE");
   });
-};
+}
 
-exports.down = function (knex) {
+export function down(knex) {
   return knex.schema.dropTable("project_milestones");
-};
+}

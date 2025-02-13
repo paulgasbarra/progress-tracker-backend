@@ -1,4 +1,4 @@
-exports.up = function (knex) {
+export function up(knex) {
   return knex.schema.createTable("submissions", function (table) {
     table.increments("id").primary();
     table.text("student_name").notNullable();
@@ -14,8 +14,8 @@ exports.up = function (knex) {
     table.jsonb("ai_analysis");
     table.timestamp("submission_date").defaultTo(knex.fn.now());
   });
-};
+}
 
-exports.down = function (knex) {
+export function down(knex) {
   return knex.schema.dropTable("submissions");
-};
+}
